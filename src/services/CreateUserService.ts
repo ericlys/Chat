@@ -10,7 +10,7 @@ interface CreateUserDTO {
 }
 
 @injectable()
-class CreateUseService {
+class CreateUserService {
   async execute({email, socket_id, avatar, name}: CreateUserDTO){
     const userAlreadyExists = await User.findOne({
       email
@@ -22,6 +22,9 @@ class CreateUseService {
       },
       {
         $set: { socket_id, avatar, name }
+      },
+      {
+        new: true,
       });
       return user;
     }else {
@@ -33,4 +36,4 @@ class CreateUseService {
   }
 }
 
-export { CreateUseService }
+export { CreateUserService }
