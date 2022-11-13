@@ -38,17 +38,19 @@ const socket = io("http://localhost:3000");
         }
       });
     });
+
+    socket.on("message", (data) => {
+      console.log(data)
+    })
   }
 
   document.getElementById("users_list").addEventListener("click", (e) => {
 
   if (e.target && e.target.matches("li.user_name_list")) {
     const idUser = e.target.getAttribute("idUser");
-    console.log(idUser)
 
 
     socket.emit("start_chat", { idUser }, (data) => {
-      console.log(data);
       idChatRoom = data.idChatRoom
     });
 
@@ -72,6 +74,21 @@ function addUser(user) {
     </li>
   `;
 }
+
+document.getElementById("user_message").addEventListener("keypress", (e) => {
+  if(e.key === "Enter") {
+    const message = e.target.value;
+
+    e.target.value = "";
+
+    const data = {
+      message,
+      idChatRoom
+    }
+
+    socket.emit("message", data)
+  }
+})
 
 
 onLoad();
