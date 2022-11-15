@@ -2,56 +2,85 @@ const socket = io("http://localhost:3000");
 
   let idChatRoom = "";
 
-  function onLoad() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const name = urlParams.get("name");
-    const avatar = urlParams.get("avatar");
-    const email = urlParams.get("email");
+function onLoad() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const name = urlParams.get("name");
+  const avatar = urlParams.get("avatar");
+  const email = urlParams.get("email");
 
-    document.querySelector(".user_logged").innerHTML += `
-      <img
-        class="avatar_user_logged"
-        src=${avatar}
-      />
-      <strong id="user_logged">${name}</strong>
-    `;
+  document.querySelector(".user_logged").innerHTML += `
+    <img
+      class="avatar_user_logged"
+      src=${avatar}
+    />
+    <strong id="user_logged">${name}</strong>
+  `;
 
-    socket.emit("start", {
-      email,
-      name,
-      avatar,
-    });
+  socket.emit("start", {
+    email,
+    name,
+    avatar,
+  });
 
-    socket.on("new_users", (user) => {
-      const existInDiv = document.getElementById(`user_${user._id}`);
+  socket.on("new_users", (user) => {
+    const existInDiv = document.getElementById(`user_${user._id}`);
 
-      if (!existInDiv) {
+    if (!existInDiv) {
+      addUser(user);
+    }
+  });
+
+  socket.emit("get_users", (users) => {
+  
+    users.map((user) => {
+      if (user.email !== email) {
         addUser(user);
       }
     });
+  });
 
-    socket.emit("get_users", (users) => {
-   
-      users.map((user) => {
-        if (user.email !== email) {
-          addUser(user);
-        }
-      });
-    });
+  socket.on("message", (data) => {
+    console.log(data)
+    addMessage(data)
+  })
+}
 
-    socket.on("message", (data) => {
-      console.log(data)
-    })
-  }
+function addMessage(data){
+  const divMessageUser = document.getElementById("message_user");
 
-  document.getElementById("users_list").addEventListener("click", (e) => {
+  divMessageUser.innerHTML += `
+  <span class="user_name user_name_date">
+    <img
+      class="img_user"
+      src=${data.user.avatar}
+    />
+    <strong> ${data.user.name}</strong>
+    <span>${dayjs(data.message.created_at).format(". DD/MM/YYYY HH:mm")} </span></span
+  >
+  <div class="messages">
+    <span class="chat_message"> ${data.message.text}</span>
+  </div>
+  `
+}
+
+document.getElementById("users_list").addEventListener("click", (e) => {
 
   if (e.target && e.target.matches("li.user_name_list")) {
     const idUser = e.target.getAttribute("idUser");
 
 
-    socket.emit("start_chat", { idUser }, (data) => {
-      idChatRoom = data.idChatRoom
+    socket.emit("start_chat", { idUser }, (response) => {
+      idChatRoom = response.room.idChatRoom;
+
+      response.messages.forEach(message => {
+
+        const data = {
+          message,
+          user: message.to
+        }
+
+        addMessage(data)
+      })
     });
 
   
