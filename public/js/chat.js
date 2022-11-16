@@ -1,12 +1,15 @@
 const socket = io("http://localhost:3000");
 
   let idChatRoom = "";
+  let userEmail = "";
 
 function onLoad() {
   const urlParams = new URLSearchParams(window.location.search);
   const name = urlParams.get("name");
   const avatar = urlParams.get("avatar");
   const email = urlParams.get("email");
+
+  userEmail = email;
 
   document.querySelector(".user_logged").innerHTML += `
     <img
@@ -40,8 +43,10 @@ function onLoad() {
   });
 
   socket.on("message", (data) => {
-    if(data.message.roomId === idChatRoom)
-    addMessage(data)
+    if(data.message.roomId === idChatRoom){
+      addMessage(data)
+      goToBottom()
+    }
   })
 
   socket.on("notification", data => {
@@ -58,20 +63,46 @@ function onLoad() {
   })
 }
 
+function deleteMessage(id) {
+
+  socket.emit("deleteMessage",  id);
+
+  const messageElement = document.getElementById(id);
+  messageElement.remove();
+
+}
+
+function removeMessage(data){
+
+}
+
 function addMessage(data){
   const divMessageUser = document.getElementById("message_user");
-
   divMessageUser.innerHTML += `
-  <span class="user_name user_name_date">
-    <img
-      class="img_user"
-      src=${data.user.avatar}
-    />
-    <strong> ${data.user.name} &nbsp; </strong>
-    <span>${dayjs(data.message.created_at).format("DD/MM/YYYY HH:mm")} </span></span
+  <div 
+    class="messageWrapper${data.user.email === userEmail ? ' myMessage' : ''}"
+    ${data.user.email === userEmail ? `id=${data.message._id}` : ''}
   >
-  <div class="messages">
-    <span class="chat_message"> ${data.message.text}</span>
+    <div class="message">
+      <span class="message_header">
+        <div class="user_name user_name_date">
+          <img
+            class="img_user"
+            src=${data.user.avatar}
+          />
+          <strong> ${data.user.name} &nbsp; </strong>
+          <span class="date">${dayjs(data.message.created_at).format("DD/MM/YYYY HH:mm")} </span>
+        </div>
+        ${data.user.email === userEmail ? 
+          `<div onClick="deleteMessage('${data.message._id}')" class="trashIcon"> <i class="material-icons">delete</i></div>` 
+          : 
+          ''
+        }
+      </span>
+      <div class="messages">
+        <span class="chat_message"> ${data.message.text}</span>
+      </div>
+    </div>
   </div>
   `
 }
@@ -107,8 +138,9 @@ document.getElementById("users_list").addEventListener("click", (e) => {
 
         addMessage(data)
       })
-    });
 
+      goToBottom()
+    });
   
   }
 });
@@ -143,6 +175,27 @@ document.getElementById("user_message").addEventListener("keypress", (e) => {
 
     socket.emit("message", data)
   }
+})
+
+function backToBottom(){
+  const container = document.getElementById("message_user");
+  const downButton = document.getElementById("arrow-down");
+  if(container.scrollTop + 2  < container.scrollHeight - container.clientHeight){
+    downButton.classList.remove("hidden");
+  }else {
+    downButton.classList.add("hidden")
+  }
+
+  
+}
+
+function goToBottom() {
+  const container = document.getElementById("message_user");
+  container.scrollTop =  container.scrollHeight - container.clientHeight
+}
+
+document.getElementById("message_user").addEventListener('scroll', () => {
+  backToBottom()
 })
 
 

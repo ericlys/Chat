@@ -4,6 +4,7 @@ import { CreateChatRoomService } from "../services/CreateChatRoomService";
 import { CreateMessageService } from "../services/CreateMessageService";
 
 import { CreateUserService } from "../services/CreateUserService";
+import { DeleteMessageService } from "../services/DeleteMessageService";
 import { GetAllUsersService } from "../services/GetAllUsersService";
 import { GetChatRoomByIdService } from "../services/GetChatRoomByIdService";
 import { GetChatRoomByUsersService } from "../services/GetChatRoomByUsersService";
@@ -96,5 +97,11 @@ io.on("connect", socket => {
       from: user
     })
 
+  })
+
+  socket.on("deleteMessage", (messageId) => {
+    const deleteMessageService = container.resolve(DeleteMessageService)
+
+    deleteMessageService.execute(messageId)
   })
 })
