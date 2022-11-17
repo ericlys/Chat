@@ -49,11 +49,15 @@ function onLoad() {
     }
   })
 
+  socket.on("deleteMessage", (id) => {
+    removeMessage(id)
+  })
+
   socket.on("notification", data => {
 
     if(data.roomId !== idChatRoom){
       const user = document.getElementById(`user_${data.from._id}`);
-  
+      console.log('asdfasdf')
       user.insertAdjacentHTML("afterbegin", 
       `
         <div class="notification"></div>
@@ -64,16 +68,12 @@ function onLoad() {
 }
 
 function deleteMessage(id) {
-
-  socket.emit("deleteMessage",  id);
-
-  const messageElement = document.getElementById(id);
-  messageElement.remove();
-
+  socket.emit("deleteMessage",  {messageId: id, idChatRoom});
 }
 
-function removeMessage(data){
-
+function removeMessage(id){
+  const messageElement = document.getElementById(id);
+  messageElement.remove();
 }
 
 function addMessage(data){
@@ -81,7 +81,7 @@ function addMessage(data){
   divMessageUser.innerHTML += `
   <div 
     class="messageWrapper${data.user.email === userEmail ? ' myMessage' : ''}"
-    ${data.user.email === userEmail ? `id=${data.message._id}` : ''}
+    id=${data.message._id}
   >
     <div class="message">
       <span class="message_header">

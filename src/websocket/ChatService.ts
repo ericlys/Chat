@@ -99,9 +99,11 @@ io.on("connect", socket => {
 
   })
 
-  socket.on("deleteMessage", (messageId) => {
+  socket.on("deleteMessage", async (data) => {
     const deleteMessageService = container.resolve(DeleteMessageService)
 
-    deleteMessageService.execute(messageId)
+    await deleteMessageService.execute(data.messageId)
+
+    io.to(data.idChatRoom).emit("deleteMessage", data.messageId)
   })
 })
