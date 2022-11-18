@@ -1,6 +1,6 @@
 
 <p align="center">
-  [![Watch the video]()](.github/chat.mp4)
+  <img alt="chat gif" src=".github/chat.gif" />
 </p>
 
 ## 📖 About
